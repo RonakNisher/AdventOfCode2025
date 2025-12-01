@@ -1,0 +1,7 @@
+[package]
+name = "AdventOfCode2025"
+version = "0.1.0"
+authors = ["Ronak Nisher <nisher.ronak@gmail.com>"]
+edition = "2024"
+
+[dependencies]
