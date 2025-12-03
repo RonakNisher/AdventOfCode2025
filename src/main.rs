@@ -3,6 +3,7 @@ use std::fs;
 
 mod day01;
 mod day02;
+mod day03;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -20,6 +21,7 @@ fn main() {
     match day.as_str() {
         "01" => day01::solve(contents),
         "02" => day02::solve(contents),
+        "03" => day03::solve(contents),
         _ => println!("No solution for day {}", day),
     }
 }
