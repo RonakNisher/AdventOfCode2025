@@ -4,6 +4,7 @@ use std::fs;
 mod day01;
 mod day02;
 mod day03;
+mod day04;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -22,6 +23,7 @@ fn main() {
         "01" => day01::solve(contents),
         "02" => day02::solve(contents),
         "03" => day03::solve(contents),
+        "04" => day04::solve(contents),
         _ => println!("No solution for day {}", day),
     }
 }
