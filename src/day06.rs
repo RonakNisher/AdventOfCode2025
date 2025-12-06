@@ -2,13 +2,11 @@ use itertools::Itertools;
 use std::panic;
 
 fn get_result(current_operator: &char, current_operands: &Vec<i64>) -> i64 {
-    let result;
     match current_operator {
-        '+' => result = current_operands.iter().sum(),
-        '*' => result = current_operands.iter().product(),
+        '+' => current_operands.iter().sum(),
+        '*' => current_operands.iter().product(),
         _ => panic!("Invalid operator: {}", current_operator),
     }
-    result
 }
 
 pub fn solve(input: String) {
@@ -81,10 +79,12 @@ pub fn solve(input: String) {
     }
 
     // last one
-    result_part2 += get_result(&current_operator, &current_operands);
+    if !current_operands.is_empty() {
+        result_part2 += get_result(&current_operator, &current_operands);
+    }
 
     println!("*******************");
-    println!("Solved Day 1 Part 1: {}", result);
-    println!("Solved Day 1 Part 2: {}", result_part2);
+    println!("Solved Part 1: {}", result);
+    println!("Solved Part 2: {}", result_part2);
     println!("*******************");
 }

@@ -48,7 +48,7 @@ pub fn solve(input: String) {
     });
 
     println!("*******************");
-    println!("Solved Day 1 Part 1: {}", result);
-    println!("Solved Day 1 Part 2: {}", result_part2);
+    println!("Solved Part 1: {}", result);
+    println!("Solved Part 2: {}", result_part2);
     println!("*******************");
 }
