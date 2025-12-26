@@ -7,43 +7,33 @@ fn coordinate_compress(
 ) -> (
     Vec<i128>,
     Vec<i128>,
-    Vec<(usize, usize)>,
     HashMap<i128, usize>,
     HashMap<i128, usize>,
 ) {
-    let mut xs: Vec<i128> = points
-        .iter()
-        .flat_map(|p| [p.0, p.0 + 1])
-        .collect();
+    let mut xs: Vec<i128> = points.iter().flat_map(|p| [p.0, p.0 + 1]).collect();
     xs.sort();
     xs.dedup();
 
-    let mut ys: Vec<i128> = points
-        .iter()
-        .flat_map(|p| [p.1, p.1 + 1])
-        .collect();
+    let mut ys: Vec<i128> = points.iter().flat_map(|p| [p.1, p.1 + 1]).collect();
     ys.sort();
     ys.dedup();
 
-    let x_index: HashMap<i128, usize> =
-        xs.iter().enumerate().map(|(idx, &val)| (val, idx)).collect();
-    let y_index: HashMap<i128, usize> =
-        ys.iter().enumerate().map(|(idx, &val)| (val, idx)).collect();
-
-    let compressed = points
+    let x_index: HashMap<i128, usize> = xs
         .iter()
-        .map(|&(x, y)| (*x_index.get(&x).unwrap(), *y_index.get(&y).unwrap()))
+        .enumerate()
+        .map(|(idx, &val)| (val, idx))
+        .collect();
+    let y_index: HashMap<i128, usize> = ys
+        .iter()
+        .enumerate()
+        .map(|(idx, &val)| (val, idx))
         .collect();
 
-    (xs, ys, compressed, x_index, y_index)
+    (xs, ys, x_index, y_index)
 }
 
 /// Builds a boolean grid (by compressed cells) of tiles that are red or green.
-fn build_allowed_mask(
-    points: &[(i128, i128)],
-    xs: &[i128],
-    ys: &[i128],
-) -> Vec<Vec<bool>> {
+fn build_allowed_mask(points: &[(i128, i128)], xs: &[i128], ys: &[i128]) -> Vec<Vec<bool>> {
     if xs.len() < 2 || ys.len() < 2 {
         return vec![];
     }
@@ -147,10 +137,8 @@ fn build_allowed_prefix(mask: &[Vec<bool>], xs: &[i128], ys: &[i128]) -> Vec<Vec
                 0
             };
 
-            prefix[row + 1][col + 1] = cell_area
-                + prefix[row][col + 1]
-                + prefix[row + 1][col]
-                - prefix[row][col];
+            prefix[row + 1][col + 1] =
+                cell_area + prefix[row][col + 1] + prefix[row + 1][col] - prefix[row][col];
         }
     }
 
@@ -164,15 +152,13 @@ fn area_in_region(
     col_start: usize,
     col_end: usize,
 ) -> i128 {
-    prefix[row_end][col_end]
-        - prefix[row_start][col_end]
-        - prefix[row_end][col_start]
+    prefix[row_end][col_end] - prefix[row_start][col_end] - prefix[row_end][col_start]
         + prefix[row_start][col_start]
 }
 
 pub fn solve(input: String) {
-    let mut result: i128 = 0;
-    let mut result_part2: i128 = 0;
+    let result: i128;
+    let result_part2: i128;
 
     let mut tiles: Vec<(i128, i128)> = vec![];
     input.lines().for_each(|line| {
@@ -184,45 +170,13 @@ pub fn solve(input: String) {
         tiles.push((x, y));
     });
 
-    for tile in &tiles {
-        println!("Tile: {:?}", tile);
-    }
-
-    let (
-        compressed_xs,
-        compressed_ys,
-        compressed_points,
-        x_index,
-        y_index,
-    ) = coordinate_compress(&tiles);
-    println!("Compressed xs: {:?}", compressed_xs);
-    println!("Compressed ys: {:?}", compressed_ys);
-    println!("Compressed points: {:?}", compressed_points);
+    let (compressed_xs, compressed_ys, x_index, y_index) = coordinate_compress(&tiles);
 
     let mut allowed_mask = build_allowed_mask(&tiles, &compressed_xs, &compressed_ys);
     mark_boundary_tiles(&mut allowed_mask, &tiles, &x_index, &y_index);
-    println!("Allowed mask (rows={}):", allowed_mask.len());
-    // for row in &allowed_mask {
-    //     println!("{:?}", row);
-    // }
 
     let allowed_prefix = build_allowed_prefix(&allowed_mask, &compressed_xs, &compressed_ys);
-
     let mut max_area = 0;
-
-    for i in 0..tiles.len() {
-        for j in i + 1..tiles.len() {
-            let area =
-                ((tiles[i].0 - tiles[j].0 + 1).abs() * (tiles[i].1 - tiles[j].1 + 1).abs()) as i128;
-            println!("Area between {:?} and {:?} is {}", tiles[i], tiles[j], area);
-
-            if area > max_area {
-                max_area = area;
-            }
-        }
-    }
-    result = max_area;
-
     let mut max_area_part2 = 0;
     for i in 0..tiles.len() {
         for j in i + 1..tiles.len() {
@@ -239,10 +193,17 @@ pub fn solve(input: String) {
             let row_start = *y_index.get(&y_min).unwrap();
             let row_end = *y_index.get(&(y_max + 1)).unwrap();
 
-            let allowed_area = area_in_region(&allowed_prefix, row_start, row_end, col_start, col_end);
+            let allowed_area =
+                area_in_region(&allowed_prefix, row_start, row_end, col_start, col_end);
             let total_area = (compressed_xs[col_end] - compressed_xs[col_start])
                 * (compressed_ys[row_end] - compressed_ys[row_start]);
 
+            // part 1
+            if total_area > max_area {
+                max_area = total_area;
+            }
+
+            // part 2
             if allowed_area == total_area {
                 let width = (x1 - x2).abs() + 1;
                 let height = (y1 - y2).abs() + 1;
@@ -254,6 +215,7 @@ pub fn solve(input: String) {
         }
     }
 
+    result = max_area;
     result_part2 = max_area_part2;
 
     println!("*******************");
